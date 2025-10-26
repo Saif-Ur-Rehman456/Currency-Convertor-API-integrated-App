@@ -1,60 +1,51 @@
 let converterSelect = document.querySelectorAll(".converter select");
 let btn = document.querySelector("button");
-let converter = document.querySelector(".converter");
-// console.log(amount.value);
+let amountInput = document.querySelector("#amount");
+let resultDiv = document.querySelector("#result");
 
-// console.log(converterSelect);
-for (select of converterSelect) {
-    for (code in countryList) {
-        // console.log(countryList[code]);
-        let newOption = document.createElement("option");
-        select.appendChild(newOption);
-        newOption.innerText = `${code}`
-        newOption.value = `${code}`
-        // console.log(newOption);
+// Dropdown currencies bharna
+for (let select of converterSelect) {
+  for (let code in countryList) {
+    let newOption = document.createElement("option");
+    newOption.innerText = code;
+    newOption.value = code;
+    select.appendChild(newOption);
+  }
 
-    }
-
-    if (select.id == "from") {
-        //  console.log(select);
-        // console.log(select.value);
-
-        select.value = "USD"
-    }
-    else if (select.id == "to") {
-        select.value = "PKR"
-    }
+  if (select.id == "from") {
+    select.value = "USD";
+  } else if (select.id == "to") {
+    select.value = "PKR";
+  }
 }
 
+// Convert button ka event
 btn.addEventListener("click", async (evt) => {
-    let amount = document.querySelector("input");
-    let amountVal = amount.value;
-    let from = document.querySelector("#from").value;
-    let to = document.querySelector("#to").value;
-    console.log(amountVal, from, to);
-    if (amountVal == "0" || amountVal < 1) {
-        amountVal = 1;
-        amount.value = 1;
-    }
+  let amountVal = parseFloat(amountInput.value);
+  let from = document.querySelector("#from").value;
+  let to = document.querySelector("#to").value;
 
+  if (isNaN(amountVal) || amountVal <= 0) {
+    amountVal = 1;
+    amountInput.value = 1;
+  }
 
-    const URL = `https://open.er-api.com/v6/latest/${from}`;
+  const URL = `https://open.er-api.com/v6/latest/${from}`;
+
+  try {
     let response = await fetch(URL);
     let data = await response.json();
     console.log(data);
+    
+    let exchangeRate = data.rates[to];
+    let convertedAmount = amountVal * exchangeRate;
 
-    let fromRate = data.rates[from];
-    let toRate = data.rates[to];
-    // console.log(fromRate);
+    displayVal(convertedAmount, to);
+  } catch (error) {
+    resultDiv.innerText = "Error in conversion";
+  }
+});
 
-    let convertedAmount = amountVal * toRate;
-    console.log(convertedAmount);
-
-displayVal(convertedAmount);
-
-})
-function displayVal(Val){
-    let res  = document.querySelector("#result");
-    converter.append(res);
-    res.innerText = Val;
+function displayVal(val, toCurrency) {
+  resultDiv.innerText = `${val.toFixed(2)} ${toCurrency}`;
 }
